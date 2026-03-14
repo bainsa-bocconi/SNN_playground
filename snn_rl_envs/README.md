@@ -67,8 +67,38 @@ python demo_random_agent.py
 
 ## Deliverables
 
-- [ ] `base_env.py` — unified wrapper interface
-- [ ] At least 3 environment implementations in `envs/`
-- [ ] `demo_random_agent.py` running a random agent on each environment
-- [ ] `requirements.txt`
-- [ ] This `README.md` updated with usage instructions and environment descriptions
+- [x] `base_env.py` — unified wrapper interface
+- [x] At least 3 environment implementations in `envs/`
+- [x] `demo_random_agent.py` running a random agent on each environment
+- [x] `requirements.txt`
+- [x] This `README.md` updated with usage instructions and environment descriptions
+
+
+## Proposed Additional Environments for SNN Testing
+### 1. Pendulum-v1 (Gymnasium)
+**Documentation:** https://gymnasium.farama.org/environments/classic_control/pendulum/
+**Action Space:** Continuous (torque between -2 and 2)
+**Observability:** Full
+**Time horizon:** Short (around 200 steps)  
+**Justification:** Pendulum is the simplest continuous control task. SNNs naturally produce continuous-valued outputs through firing rates, making this a good first test of whether an SNN can control a continuous action space. The short time horizon keeps training fast.
+
+### 2. LunarLander-v2 (Gymnasium)
+**Documentation:** https://gymnasium.farama.org/environments/box2d/lunar_lander/  
+**Action space:** Discrete (4 actions: do nothing, fire left, fire main, fire right)  
+**Observability:** Full  
+**Time horizon:** Medium (episode ends when lander crashes, goes out of bounds, or lands)
+**Justification:** LunarLander requires precise timing and coordination — properties that temporal coding in SNNs handles well. It's more complex than CartPole but still manageable, making it a good intermediate benchmark.
+
+### 3. FrozenLake-v1 (Gymnasium)
+**Documentation:** https://gymnasium.farama.org/environments/toy_text/frozen_lake/  
+**Action space:** Discrete (4 directions)  
+**Observability:** Partial (agent only knows its current tile, not the full map)  
+**Time horizon:** Short (100/200 steps max)
+**Justification:** The stochastic, partially observable nature of FrozenLake tests whether an SNN can handle uncertainty. The agent doesn't always move in the intended direction, so it must learn robust policies. Good contrast to fully observable environments.
+
+### 4. Connect4 (PettingZoo)
+**Documentation:** https://pettingzoo.farama.org/environments/classic/connect_four/  
+**Action space:** Discrete (7 columns)  
+**Observability:** Full  
+**Time horizon:** Medium (42 moves max)  
+**Justification:** Connect4 is a two-player strategic game with a larger state space than Tic-Tac-Toe. It tests whether an SNN can learn multi-step planning. Already available in PettingZoo so integration would be straightforward using the same wrapper pattern as Tic-Tac-Toe.

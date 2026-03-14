@@ -1,0 +1,6 @@
+gymnasium[classic-control,toy-text]
+pettingzoo
+chess
+rlcard
+pygame
+numpy
