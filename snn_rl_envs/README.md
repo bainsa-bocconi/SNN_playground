@@ -87,14 +87,14 @@ python demo_random_agent.py
 **Action space:** Discrete (4 actions: do nothing, fire left, fire main, fire right)  
 **Observability:** Full  
 **Time horizon:** Medium (episode ends when lander crashes, goes out of bounds, or lands)
-**Justification:** LunarLander requires precise timing and coordination — properties that temporal coding in SNNs handles well. It's more complex than CartPole but still manageable, making it a good intermediate benchmark.
+**Justification:** LunarLander requires precise timing and coordination, and it's more complex than CartPole but still manageable, making it a good intermediate benchmark.
 
 ### 3. FrozenLake-v1 (Gymnasium)
 **Documentation:** https://gymnasium.farama.org/environments/toy_text/frozen_lake/  
 **Action space:** Discrete (4 directions)  
 **Observability:** Partial (agent only knows its current tile, not the full map)  
 **Time horizon:** Short (100/200 steps max)
-**Justification:** The stochastic, partially observable nature of FrozenLake tests whether an SNN can handle uncertainty. The agent doesn't always move in the intended direction, so it must learn robust policies. Good contrast to fully observable environments.
+12**Justification:** The stochastic, partially observable nature of FrozenLake tests whether the SNN can handle uncertainty. The agent doesn't always move in the intended direction, so it must learn robust policies. Good contrast to fully observable environments.
 
 ### 4. Connect4 (PettingZoo)
 **Documentation:** https://pettingzoo.farama.org/environments/classic/connect_four/  
