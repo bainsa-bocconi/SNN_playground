@@ -1,0 +1,4 @@
+matplotlib
+numpy
+taichi # requires python 3.12 
+cupy-cuda12x
