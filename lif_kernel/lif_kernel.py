@@ -1,6 +1,5 @@
 import numpy as np
 import cupy as cp
-import time
 
 lif_step_kernel = cp.RawKernel(r'''
 extern "C" __global__
@@ -117,38 +116,3 @@ class LIFLayer:
             self.V[:]      = 0.0
             self.spikes[:] = 0
             self.counts[:] = 0
-
-# ---- simulation zone ----
-
-pattern = cp.array([0.1, 0.2, 0.3, 0.0, 0.15, 0.25, 0.05, 0.2, 0.1, 0.3], dtype=cp.float32)
-
-def benchmark(N, T, backend='cpu', repeats=5, warmup=1):
-    for _ in range(warmup):
-        m = LIFLayer(N, backend=backend)
-        for t in range(T):
-            m.forward(float(pattern[t % len(pattern)]))
-
-    times = []
-    for _ in range(repeats):
-        m = LIFLayer(N, backend=backend)
-        start = time.perf_counter()
-        for t in range(T):
-            m.forward(float(pattern[t % len(pattern)]))
-        end = time.perf_counter()
-        times.append(end - start)
-
-    times = np.array(times)
-    return {"mean": times.mean(), "std": times.std(),
-            "min": times.min(),  "max": times.max()}
-
-N_values = [1000, 10000, 100000]
-T = 10000
-
-for backend in ("cpu", "gpu"):
-    print(f"--- {backend.upper()} ---")
-    for N in N_values:
-        res = benchmark(N, T, backend=backend)
-        print(f"  N={N:<7}  mean={res['mean']:.4f}s  "
-              f"std={res['std']:.4f}s  "
-              f"min={res['min']:.4f}s  max={res['max']:.4f}s")
-    print()

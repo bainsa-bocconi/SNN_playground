@@ -51,6 +51,3 @@ def computetime(V_fire=1.0, V_zero=0.0, rate=0.98, initialtension=0.0):
         meantime.append(sum(times) / len(times))
         print(f"mean for {n} trials:", meantime[-1])
     return meantime, voltages, spikes
-
-meantime, voltages, spikes = computetime()
-print(f"execution meantime: {meantime}")

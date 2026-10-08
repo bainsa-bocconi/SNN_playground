@@ -61,13 +61,13 @@ class LIFLayer:
 ```
 lif_kernel/
 ├── README.md
-├── requirements.txt           # numpy, torch, cupy (optional), triton (optional)
-├── lif_neuron.py              # Pure Python LIF implementation (C.1) + LIFLayer class (C.4)
-├── lif_kernel.cu              # CUDA kernel (C.2 Option A) — optional
-├── lif_kernel_cupy.py         # CuPy/Triton kernel (C.2 Option B) — optional
+├── requirements.txt           # numpy, matplotlib, taichi, cupy-cuda12x
+├── lif_pure_python.py         # Zero-dependency single-neuron LIF
+├── lif_kernel.py              # LIFLayer class — CPU (numpy) + GPU (CuPy RawKernel)
+├── lif_GPU_parallel.py        # LIFLayer class — Taichi/Vulkan backend
 └── benchmark/
-    ├── run_benchmark.py       # Benchmark script (C.3)
-    └── benchmark_results.png  # Generated comparison plot
+    ├── README.md              # Benchmark documentation
+    └── run_benchmark.py       # Unified benchmark script (all backends)
 ```
 
 ## Setup
@@ -75,15 +75,27 @@ lif_kernel/
 ```bash
 cd lif_kernel
 pip install -r requirements.txt
-# Run pure Python demo
-python lif_neuron.py
-# Run benchmark
+```
+
+## Usage
+
+```bash
+# Single-neuron reference
+python lif_pure_python.py
+
+# LIFLayer class with CPU + CuPy RawKernel (requires CUDA)
+python lif_kernel.py
+
+# Taichi/Vulkan backend (no CUDA needed, requires Python 3.12)
+python lif_GPU_parallel.py
+
+# Unified benchmarks (CPU always works, GPU/Taichi auto-detected)
 python benchmark/run_benchmark.py
 ```
 
 ## Deliverables
 
-- [ ] `lif_neuron.py` — pure Python LIF implementation and `LIFLayer` class
-- [ ] GPU kernel implementation (at least one of the three options)
-- [ ] `benchmark/run_benchmark.py` and `benchmark/benchmark_results.png`
-- [ ] This `README.md` with setup and usage instructions
+- [x] `lif_pure_python.py` — zero-dependency LIF neuron
+- [x] `lif_kernel.py` — LIFLayer with CPU + CuPy RawKernel backends
+- [x] `lif_GPU_parallel.py` — LIFLayer with Taichi/Vulkan backend
+- [x] `benchmark/run_benchmark.py` — unified benchmark with plots and CSV

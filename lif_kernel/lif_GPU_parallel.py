@@ -1,48 +1,71 @@
-import time
 import taichi as ti
+import numpy as np
 
 ti.init(arch=ti.vulkan)
 
-pattern = [0.01, 0.02, 0.03, 0.0, 0.015, 0.025, 0.005, 0.02, 0.01, 0.03]
-pattern = [x * 2 for x in pattern]
+BETA = 0.9
+V_TH = 1.0
 
-V_FIRE = 1.0
-V_ZERO = 0.0
-RATE = 0.98
-T = 10000
-N_MAX = 100000
-REPEATS = 20
-
-pat_len = len(pattern)
-pattern_f = ti.field(dtype=ti.f32, shape=pat_len)
-V_par_f = ti.field(dtype=ti.f32, shape=N_MAX)
-
-for i, v in enumerate(pattern):
-    pattern_f[i] = v
 
 @ti.kernel
-def run_parallel(N: int, T: int):
-    for i in range(N):
+def _forward_kernel(V: ti.template(), spikes: ti.template(),
+                    beta: ti.f32, threshold: ti.f32, inp: ti.f32):
+    for i in range(V.shape[0]):
+        v = beta * V[i] + inp
+        if v >= threshold:
+            spikes[i] = 1
+            v -= threshold
+        else:
+            spikes[i] = 0
+        V[i] = v
+
+
+@ti.kernel
+def _run_kernel(V: ti.template(), counts: ti.template(),
+                beta: ti.f32, threshold: ti.f32,
+                pattern: ti.types.ndarray(),
+                T: ti.i32, pat_len: ti.i32):
+    for i in range(V.shape[0]):
         v = 0.0
+        cnt = 0
         for t in range(T):
-            inp = pattern_f[t % pat_len]
-            v = RATE * v + inp
-            if v >= V_FIRE:
-                v = V_ZERO
-        V_par_f[i] = v
+            inp = pattern[t % pat_len]
+            v = beta * v + inp
+            if v >= threshold:
+                cnt += 1
+                v -= threshold
+        V[i] = v
+        counts[i] = cnt
 
-def run_gpu(N: int, T: int):
-    run_parallel(N, T)
-    ti.sync()
 
-population_sizes = list(range(5000, N_MAX + 1, 5000))
+class LIFLayer:
+    def __init__(self, n_neurons, beta=BETA, threshold=V_TH, backend='taichi'):
+        self.n_neurons = n_neurons
+        self.beta = beta
+        self.threshold = threshold
+        self.backend = backend
 
-for N in population_sizes:
-    times = []
-    for _ in range(REPEATS):
-        start = time.perf_counter()
-        run_gpu(N, T)
-        times.append(time.perf_counter() - start)
+        self.V = ti.field(dtype=ti.f32, shape=n_neurons)
+        self.spikes = ti.field(dtype=ti.i32, shape=n_neurons)
+        self.counts = ti.field(dtype=ti.i32, shape=n_neurons)
 
-    mean_time = sum(times) / REPEATS
-    print(f"N={N:>7} | mean GPU execution time: {mean_time*1000:7.2f} ms")
+    def forward(self, input_current: float):
+        _forward_kernel(self.V, self.spikes,
+                        self.beta, self.threshold,
+                        float(input_current))
+        ti.sync()
+        return self.spikes.to_numpy(), self.V.to_numpy()
+
+    def run(self, T, pattern):
+        self.reset()
+        pat = np.array(pattern, dtype=np.float32)
+        _run_kernel(self.V, self.counts,
+                    self.beta, self.threshold,
+                    pat, T, len(pattern))
+        ti.sync()
+        return self.counts.to_numpy()
+
+    def reset(self):
+        self.V.fill(0)
+        self.spikes.fill(0)
+        self.counts.fill(0)
