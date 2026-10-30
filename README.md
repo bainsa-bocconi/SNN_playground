@@ -74,8 +74,10 @@ SNN_playground/
 │   └── notes/                 # Architecture notes
 └── lif_kernel/                # Task C — LIF GPU kernel
     ├── README.md
-    ├── lif_neuron.py          # Pure Python reference implementation
-    └── benchmark/             # Benchmarking scripts and plots
+    ├── lif_pure_python.py     # Zero-dependency single-neuron LIF
+    ├── lif_kernel.py          # LIFLayer with CPU + CuPy RawKernel backends
+    ├── lif_GPU_parallel.py    # LIFLayer with Taichi/Vulkan backend
+    └── benchmark/             # Benchmarks and plots
 ```
 
 ---
